@@ -35,9 +35,17 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let app, db, auth;
+let firebaseError = null;
+try {
+  if (!firebaseConfig.apiKey) throw new Error("Missing API Key");
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  auth = getAuth(app);
+} catch (error) {
+  console.error("App.jsx: Firebase initialization failed:", error);
+  firebaseError = error;
+}
 
 // --- COMPONENTS ---
 
@@ -104,7 +112,7 @@ const TaskWidget = ({ uid }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || !db) return;
     const q = query(collection(db, `users/${uid}/tasks`), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -118,7 +126,7 @@ const TaskWidget = ({ uid }) => {
 
   const addTask = async (e) => {
     e.preventDefault();
-    if (!newTask.trim() || !uid) return;
+    if (!newTask.trim() || !uid || !db) return;
     try {
       await addDoc(collection(db, `users/${uid}/tasks`), {
         text: newTask,
@@ -133,6 +141,7 @@ const TaskWidget = ({ uid }) => {
   };
 
   const deleteTask = async (id) => {
+    if (!db) return;
     try {
       await deleteDoc(doc(db, `users/${uid}/tasks`, id));
     } catch (error) {
@@ -193,7 +202,7 @@ const Scratchpad = ({ uid }) => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || !db) return;
     const unsubscribe = onSnapshot(doc(db, `users/${uid}/notes`, 'scratchpad'), (doc) => {
       if (doc.exists()) {
         setNote(doc.data().content);
@@ -204,7 +213,7 @@ const Scratchpad = ({ uid }) => {
 
   const saveNote = async (content) => {
     setNote(content);
-    if (!uid) return;
+    if (!uid || !db) return;
     setSaving(true);
     try {
       await setDoc(doc(db, `users/${uid}/notes`, 'scratchpad'), {
@@ -283,6 +292,138 @@ const Dashboard = ({ uid }) => {
   );
 };
 
+const ProjectsView = ({ uid }) => {
+  const [projects, setProjects] = useState([]);
+  const [newProject, setNewProject] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!uid || !db) return;
+    const q = query(collection(db, `users/${uid}/projects`), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching projects:", error);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [uid]);
+
+  const addProject = async (e) => {
+    e.preventDefault();
+    if (!newProject.trim() || !uid || !db) return;
+    try {
+      await addDoc(collection(db, `users/${uid}/projects`), {
+        title: newProject,
+        status: 'Active',
+        progress: 0,
+        createdAt: new Date().toISOString()
+      });
+      setNewProject('');
+    } catch (error) {
+      console.error("Error adding project:", error);
+    }
+  };
+
+  const deleteProject = async (id) => {
+    if (!db) return;
+    try {
+      await deleteDoc(doc(db, `users/${uid}/projects`, id));
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    }
+  };
+
+  const updateProjectStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'Active' ? 'Done' : 'Active';
+    const newProgress = newStatus === 'Done' ? 100 : 0;
+    if (!db) return;
+    try {
+      await setDoc(doc(db, `users/${uid}/projects`, id), {
+        status: newStatus,
+        progress: newProgress
+      }, { merge: true });
+    } catch (error) {
+      console.error("Error updating project:", error);
+    }
+  };
+
+
+  return (
+    <div className="h-full p-12 flex flex-col gap-8">
+      <div className="flex items-end justify-between border-b border-white/10 pb-6">
+        <div>
+          <h1 className="text-4xl font-light text-white mb-2">Projects</h1>
+          <div className="flex items-center gap-2 text-xs text-white/40 font-mono uppercase tracking-widest">
+            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+            Active Workflows
+          </div>
+        </div>
+        <form onSubmit={addProject} className="flex gap-4">
+          <input
+            type="text"
+            value={newProject}
+            onChange={(e) => setNewProject(e.target.value)}
+            placeholder="New Project Name..."
+            className="bg-white/5 border border-white/10 px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-white/50 transition-colors font-mono text-sm w-64"
+          />
+          <button
+            type="submit"
+            className="bg-white text-black px-4 py-2 font-mono text-sm uppercase tracking-wider hover:bg-white/90 transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} /> Create
+          </button>
+        </form>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto custom-scrollbar pr-2">
+        {loading ? (
+          <div className="col-span-full text-center text-white/30 font-mono animate-pulse">Loading Projects...</div>
+        ) : projects.length === 0 ? (
+          <div className="col-span-full text-center text-white/30 font-mono">No active projects found. Initialize new workflow.</div>
+        ) : (
+          projects.map(project => (
+            <div key={project.id} className="bg-white/5 border border-white/10 p-6 backdrop-blur-md group hover:border-white/30 transition-all relative">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl text-white font-light">{project.title}</h3>
+                <button
+                  onClick={() => deleteProject(project.id)}
+                  className="text-white/20 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => updateProjectStatus(project.id, project.status)}
+                    className={`px-2 py-1 text-xs font-mono uppercase tracking-wider border ${project.status === 'Active'
+                      ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10'
+                      : 'border-white/20 text-white/40 bg-white/5'
+                      } hover:opacity-80 transition-opacity`}
+                  >
+                    {project.status}
+                  </button>
+                  <span className="text-xs text-white/40 font-mono">{project.progress}%</span>
+                </div>
+
+                <div className="h-1 w-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-white/80 transition-all duration-500 ease-out"
+                    style={{ width: `${project.progress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN APP COMPONENT ---
 
 function App() {
@@ -290,6 +431,7 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -301,6 +443,22 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  if (firebaseError) {
+    return (
+      <div className="h-screen w-screen bg-slate-950 flex items-center justify-center text-white p-8">
+        <div className="max-w-md border border-red-500/50 bg-red-500/10 p-6 backdrop-blur-md">
+          <h1 className="text-xl font-bold text-red-400 mb-4">System Error</h1>
+          <p className="text-sm text-white/80 mb-4">
+            Firebase configuration is missing or invalid. Please check your .env file.
+          </p>
+          <pre className="text-xs font-mono bg-black/50 p-4 overflow-x-auto text-red-300">
+            {firebaseError.message}
+          </pre>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen bg-slate-950 overflow-hidden selection:bg-white/20 selection:text-white">
@@ -316,7 +474,8 @@ function App() {
 
       <main className="flex-1 relative z-10">
         {activeTab === 'dashboard' && <Dashboard uid={user?.uid} />}
-        {activeTab !== 'dashboard' && (
+        {activeTab === 'projects' && <ProjectsView uid={user?.uid} />}
+        {activeTab !== 'dashboard' && activeTab !== 'projects' && (
           <div className="h-full flex items-center justify-center text-white/20 font-mono text-xl uppercase tracking-widest">
             Module: {activeTab} [Offline]
           </div>
