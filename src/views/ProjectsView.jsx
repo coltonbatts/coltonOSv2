@@ -1,20 +1,29 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, FolderKanban } from 'lucide-react';
 import { useCollection } from '../hooks/useFirestore';
+import { useToast } from '../context/ToastContext';
 
 export default function ProjectsView({ uid }) {
   const { items: projects, loading, add, update, remove } = useCollection(uid, 'projects');
   const [newProject, setNewProject] = useState('');
+  const { addToast } = useToast();
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!newProject.trim()) return;
-    await add({
+
+    const id = await add({
       title: newProject,
       status: 'Active',
       progress: 0
     });
-    setNewProject('');
+
+    if (id) {
+      addToast('Project created successfully', 'success');
+      setNewProject('');
+    } else {
+      addToast('Failed to create project', 'error');
+    }
   };
 
   const toggleStatus = async (project) => {
@@ -39,7 +48,7 @@ export default function ProjectsView({ uid }) {
             <span>{projects.filter(p => p.status === 'Active').length} active</span>
           </div>
         </div>
-        
+
         <form onSubmit={handleAdd} className="flex gap-4">
           <input
             type="text"
@@ -74,8 +83,8 @@ export default function ProjectsView({ uid }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map(project => (
-              <div 
-                key={project.id} 
+              <div
+                key={project.id}
                 className="bg-white/5 border border-white/10 p-6 backdrop-blur-md group hover:border-white/30 transition-all"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -92,11 +101,10 @@ export default function ProjectsView({ uid }) {
                   <div className="flex justify-between items-center">
                     <button
                       onClick={() => toggleStatus(project)}
-                      className={`px-2 py-1 text-xs font-mono uppercase tracking-wider border transition-colors ${
-                        project.status === 'Active'
+                      className={`px-2 py-1 text-xs font-mono uppercase tracking-wider border transition-colors ${project.status === 'Active'
                           ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
                           : 'border-white/20 text-white/40 bg-white/5 hover:bg-white/10'
-                      }`}
+                        }`}
                     >
                       {project.status}
                     </button>

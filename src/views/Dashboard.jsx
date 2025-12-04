@@ -27,30 +27,30 @@ export default function Dashboard({ uid, onNavigate }) {
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
 
   const vaultStats = [
-    { 
-      label: 'Projects', 
-      value: projects.length, 
+    {
+      label: 'Projects',
+      value: projects.length,
       icon: FolderOpen,
       color: 'blue',
       active: projects.filter(p => p.status === 'Active').length
     },
-    { 
-      label: 'Assets', 
-      value: assets.length, 
+    {
+      label: 'Assets',
+      value: assets.length,
       icon: FileText,
       color: 'green',
       active: assets.filter(a => a.status === 'Active').length
     },
-    { 
-      label: 'Prompts', 
-      value: prompts.length, 
+    {
+      label: 'Prompts',
+      value: prompts.length,
       icon: MessageSquare,
       color: 'purple',
       active: prompts.filter(p => p.status === 'Active').length
     },
-    { 
-      label: 'Links', 
-      value: links.length, 
+    {
+      label: 'Links',
+      value: links.length,
       icon: Link2,
       color: 'yellow',
       active: links.filter(l => l.status === 'Active').length
@@ -58,7 +58,7 @@ export default function Dashboard({ uid, onNavigate }) {
   ];
 
   const getTypeIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'project': return FolderOpen;
       case 'asset': return FileText;
       case 'prompt': return MessageSquare;
@@ -68,7 +68,7 @@ export default function Dashboard({ uid, onNavigate }) {
   };
 
   const getTypeColor = (type) => {
-    switch(type) {
+    switch (type) {
       case 'project': return 'text-blue-400';
       case 'asset': return 'text-emerald-400';
       case 'prompt': return 'text-purple-400';
@@ -98,7 +98,7 @@ export default function Dashboard({ uid, onNavigate }) {
       <div className="col-span-12 row-span-1 flex items-end justify-between border-b border-white/10 pb-6">
         <div>
           <h1 className="text-3xl lg:text-4xl font-light text-white mb-2">
-            Welcome back, Colton.
+            Welcome back, {import.meta.env.VITE_USER_NAME || 'User'}.
           </h1>
           <div className="flex items-center gap-2 text-xs text-white/40 font-mono uppercase tracking-widest">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -116,7 +116,7 @@ export default function Dashboard({ uid, onNavigate }) {
           {vaultStats.map((stat) => (
             <button
               key={stat.label}
-              onClick={() => onNavigate?.('vault')}
+              onClick={() => onNavigate?.({ view: 'vault', category: stat.id })}
               className="bg-white/5 border border-white/10 p-4 hover:bg-white/[0.07] hover:border-white/20 transition-all group text-left"
             >
               <div className="flex items-center justify-between mb-3">
@@ -138,26 +138,26 @@ export default function Dashboard({ uid, onNavigate }) {
         <div className="h-full bg-white/5 border border-white/10 p-4 flex flex-col justify-center">
           <div className="text-xs text-white/40 font-mono uppercase tracking-wider mb-3">Quick Actions</div>
           <div className="grid grid-cols-2 gap-2">
-            <button 
-              onClick={() => onNavigate?.('vault')}
+            <button
+              onClick={() => onNavigate?.({ view: 'vault', category: 'projects', action: 'add' })}
               className="px-3 py-2 bg-white/5 border border-white/10 text-xs font-mono text-white/60 hover:text-white hover:border-white/30 transition-all text-left"
             >
               + Add Project
             </button>
-            <button 
-              onClick={() => onNavigate?.('vault')}
+            <button
+              onClick={() => onNavigate?.({ view: 'vault', category: 'assets', action: 'add' })}
               className="px-3 py-2 bg-white/5 border border-white/10 text-xs font-mono text-white/60 hover:text-white hover:border-white/30 transition-all text-left"
             >
               + Add Asset
             </button>
-            <button 
-              onClick={() => onNavigate?.('vault')}
+            <button
+              onClick={() => onNavigate?.({ view: 'vault', category: 'prompts', action: 'add' })}
               className="px-3 py-2 bg-white/5 border border-white/10 text-xs font-mono text-white/60 hover:text-white hover:border-white/30 transition-all text-left"
             >
               + Add Prompt
             </button>
-            <button 
-              onClick={() => onNavigate?.('vault')}
+            <button
+              onClick={() => onNavigate?.({ view: 'vault', category: 'links', action: 'add' })}
               className="px-3 py-2 bg-white/5 border border-white/10 text-xs font-mono text-white/60 hover:text-white hover:border-white/30 transition-all text-left"
             >
               + Add Link

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db, collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from '../lib/firebase';
+import { db, collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, updateDoc, setDoc } from '../lib/firebase';
 
 /**
  * Universal Firestore collection hook
@@ -123,7 +123,7 @@ export function useDocument(uid, collectionName, docId) {
     if (!uid || !db) return false;
     setSaving(true);
     try {
-      const { setDoc } = await import('../lib/firebase');
+      // const { setDoc } = await import('../lib/firebase');
       await setDoc(doc(db, docPath), {
         ...newData,
         updatedAt: new Date().toISOString()

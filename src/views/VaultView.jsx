@@ -17,6 +17,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useCollection } from '../hooks/useFirestore';
+import { useToast } from '../context/ToastContext';
 import { Widget, Modal, Input, TextArea, Select, Tag, EmptyState } from '../components/UI';
 
 // ============================================
@@ -56,14 +57,45 @@ const CATEGORIES = {
 // ============================================
 // MAIN VAULT VIEW
 // ============================================
-export default function VaultView({ uid }) {
+// ============================================
+// MAIN VAULT VIEW
+// ============================================
+export default function VaultView({ uid, initialState }) {
   const [activeCategory, setActiveCategory] = useState('projects');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const searchInputRef = React.useRef(null);
+
+  // Handle initial state from navigation
+  React.useEffect(() => {
+    if (initialState) {
+      if (initialState.category) {
+        setActiveCategory(initialState.category);
+      }
+      if (initialState.action === 'add') {
+        setShowAddModal(true);
+      }
+    }
+  }, [initialState]);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Cmd+K for search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { items, loading, add, update, remove } = useCollection(uid, `vault_${activeCategory}`);
+  const { addToast } = useToast();
 
   // Filter items by search
   const filteredItems = items.filter(item => {
@@ -77,20 +109,35 @@ export default function VaultView({ uid }) {
   });
 
   const handleAdd = async (data) => {
-    await add(data);
-    setShowAddModal(false);
+    const id = await add(data);
+    if (id) {
+      addToast(`${category.label.slice(0, -1)} added successfully`, 'success');
+      setShowAddModal(false);
+    } else {
+      addToast('Failed to add item', 'error');
+    }
   };
 
   const handleUpdate = async (data) => {
     if (editingItem) {
-      await update(editingItem.id, data);
-      setEditingItem(null);
+      const success = await update(editingItem.id, data);
+      if (success) {
+        addToast('Item updated successfully', 'success');
+        setEditingItem(null);
+      } else {
+        addToast('Failed to update item', 'error');
+      }
     }
   };
 
   const handleDelete = async (id) => {
     if (confirm('Delete this item?')) {
-      await remove(id);
+      const success = await remove(id);
+      if (success) {
+        addToast('Item deleted', 'info');
+      } else {
+        addToast('Failed to delete item', 'error');
+      }
     }
   };
 
@@ -124,11 +171,10 @@ export default function VaultView({ uid }) {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 border transition-all font-mono text-sm ${
-              activeCategory === cat.id
-                ? 'border-white/40 bg-white/10 text-white'
-                : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/20'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 border transition-all font-mono text-sm ${activeCategory === cat.id
+              ? 'border-white/40 bg-white/10 text-white'
+              : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/20'
+              }`}
           >
             <cat.icon size={16} />
             {cat.label}
@@ -141,10 +187,11 @@ export default function VaultView({ uid }) {
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
           <input
+            ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`Search ${category.label.toLowerCase()}...`}
+            placeholder={`Search ${category.label.toLowerCase()}... (Cmd+K)`}
             className="w-full bg-white/5 border border-white/10 pl-10 pr-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors font-mono text-sm"
           />
         </div>
@@ -310,11 +357,10 @@ function VaultCard({ item, category, onEdit, onDelete }) {
           <span className="text-xs text-white/30 font-mono uppercase">{item.type}</span>
         )}
         {item.status && (
-          <span className={`text-xs font-mono px-2 py-0.5 ${
-            item.status === 'Active' ? 'text-emerald-400 bg-emerald-500/10' :
+          <span className={`text-xs font-mono px-2 py-0.5 ${item.status === 'Active' ? 'text-emerald-400 bg-emerald-500/10' :
             item.status === 'Archived' ? 'text-white/30 bg-white/5' :
-            'text-yellow-400 bg-yellow-500/10'
-          }`}>
+              'text-yellow-400 bg-yellow-500/10'
+            }`}>
             {item.status}
           </span>
         )}

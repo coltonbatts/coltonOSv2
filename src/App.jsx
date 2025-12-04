@@ -5,6 +5,7 @@ import Dashboard from './views/Dashboard';
 import ProjectsView from './views/ProjectsView';
 import VaultView from './views/VaultView';
 import ScheduleView from './views/ScheduleView';
+import { ToastProvider } from './context/ToastContext';
 
 // ============================================
 // ERROR SCREEN
@@ -21,12 +22,12 @@ function ErrorScreen({ error }) {
           {error.message}
         </pre>
         <div className="text-xs text-white/40 font-mono">
-          Required variables:<br/>
-          VITE_FIREBASE_API_KEY<br/>
-          VITE_FIREBASE_AUTH_DOMAIN<br/>
-          VITE_FIREBASE_PROJECT_ID<br/>
-          VITE_FIREBASE_STORAGE_BUCKET<br/>
-          VITE_FIREBASE_MESSAGING_SENDER_ID<br/>
+          Required variables:<br />
+          VITE_FIREBASE_API_KEY<br />
+          VITE_FIREBASE_AUTH_DOMAIN<br />
+          VITE_FIREBASE_PROJECT_ID<br />
+          VITE_FIREBASE_STORAGE_BUCKET<br />
+          VITE_FIREBASE_MESSAGING_SENDER_ID<br />
           VITE_FIREBASE_APP_ID
         </div>
       </div>
@@ -59,6 +60,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     if (!auth) {
@@ -77,6 +79,7 @@ function App() {
           })
           .catch((error) => {
             console.error("Auth Error:", error);
+            setAuthError(error);
             setLoading(false);
           });
       }
@@ -90,6 +93,11 @@ function App() {
     return <ErrorScreen error={firebaseError} />;
   }
 
+  // Handle Authentication error
+  if (authError) {
+    return <ErrorScreen error={authError} />;
+  }
+
   // Show loading while authenticating
   if (loading) {
     return <LoadingScreen />;
@@ -97,13 +105,16 @@ function App() {
 
   // Render active view
   const renderView = () => {
-    switch (activeTab) {
+    const viewName = typeof activeTab === 'string' ? activeTab : activeTab.view;
+    const viewProps = typeof activeTab === 'object' ? activeTab : {};
+
+    switch (viewName) {
       case 'dashboard':
         return <Dashboard uid={user?.uid} onNavigate={setActiveTab} />;
       case 'projects':
         return <ProjectsView uid={user?.uid} />;
       case 'vault':
-        return <VaultView uid={user?.uid} />;
+        return <VaultView uid={user?.uid} initialState={viewProps} />;
       case 'schedule':
         return <ScheduleView uid={user?.uid} />;
       default:
@@ -112,27 +123,29 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-slate-950 overflow-hidden selection:bg-white/20 selection:text-white">
-      {/* Background Grid Effect */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}
-      />
+    <ToastProvider>
+      <div className="flex h-screen w-screen bg-slate-950 overflow-hidden selection:bg-white/20 selection:text-white">
+        {/* Background Grid Effect */}
+        <div
+          className="fixed inset-0 pointer-events-none opacity-20"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }}
+        />
 
-      {/* Subtle gradient overlay */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
+        {/* Subtle gradient overlay */}
+        <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
 
-      {/* Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        {/* Sidebar */}
+        <Sidebar activeTab={typeof activeTab === 'string' ? activeTab : activeTab.view} setActiveTab={setActiveTab} />
 
-      {/* Main Content */}
-      <main className="flex-1 relative z-10 overflow-hidden">
-        {renderView()}
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="flex-1 relative z-10 overflow-hidden">
+          {renderView()}
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
 
