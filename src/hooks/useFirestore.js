@@ -123,7 +123,7 @@ export function useDocument(uid, collectionName, docId) {
     if (!uid || !db) return false;
     setSaving(true);
     try {
-      // const { setDoc } = await import('../lib/firebase');
+
       await setDoc(doc(db, docPath), {
         ...newData,
         updatedAt: new Date().toISOString()

@@ -4,14 +4,31 @@ A personal operating system and dashboard built with React, Vite, and Tailwind C
 
 ## Overview
 
-Colton OS is a web-based personal dashboard featuring an "Industrial Brutalism meets High-Tech Minimal" design aesthetic. It serves as a central hub for tasks, notes, and other personal data, integrated with Firebase.
+Colton OS is a web-based personal dashboard featuring an "Industrial Brutalism meets High-Tech Minimal" design aesthetic. It serves as a central hub for tasks, notes, and other personal data, fully integrated with Firebase for real-time data persistence and authentication.
+
+## Features
+
+- **Dashboard**: Central hub with quick actions and system status.
+- **Projects View**: Kanban-style project management with progress tracking.
+- **Vault**: A comprehensive asset management system for:
+  - **Projects**: Portfolio and client work.
+  - **Assets**: Templates, graphics, and reusable files.
+  - **Prompts**: AI system prompts and context blocks.
+  - **Links**: Bookmarks and references.
+- **Firebase Integration**:
+  - Anonymous Authentication.
+  - Real-time Firestore updates.
+  - Robust error handling and connection status.
+- **UI/UX**:
+  - Dark mode "Industrial Brutalism" aesthetic.
+  - Toast notifications for user feedback.
+  - Responsive design for all devices.
 
 ## Tech Stack
 
 - **Frontend:** React, Vite
-- **Styling:** Tailwind CSS
+- **Styling:** Tailwind CSS, Lucide React (Icons)
 - **Backend/Database:** Firebase (Firestore, Auth)
-- **Icons:** Lucide React
 
 ## Getting Started
 
