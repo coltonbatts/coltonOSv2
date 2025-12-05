@@ -13,10 +13,11 @@ import { Clock, TaskWidget, Scratchpad, StatCard, Widget } from '../components/U
 
 export default function Dashboard({ uid, onNavigate }) {
   // Fetch vault collections for stats
-  const { items: projects } = useCollection(uid, 'vault_projects');
-  const { items: assets } = useCollection(uid, 'vault_assets');
-  const { items: prompts } = useCollection(uid, 'vault_prompts');
-  const { items: links } = useCollection(uid, 'vault_links');
+  // Fetch vault collections for stats
+  const { items: projects } = useCollection(uid, 'projects');
+  const { items: assets } = useCollection(uid, 'assets');
+  const { items: prompts } = useCollection(uid, 'prompts');
+  const { items: links } = useCollection(uid, 'links');
 
   // Combine all items for recent activity
   const allItems = [
@@ -189,7 +190,13 @@ export default function Dashboard({ uid, onNavigate }) {
                   <div
                     key={`${item._type}-${item.id}`}
                     className="flex items-center gap-4 p-3 hover:bg-white/5 transition-colors group cursor-pointer"
-                    onClick={() => onNavigate?.('vault')}
+                    onClick={() => {
+                      if (item._type === 'project') {
+                        onNavigate({ view: 'project-detail', id: item.id });
+                      } else {
+                        onNavigate({ view: 'vault', category: item._type + 's' });
+                      }
+                    }}
                   >
                     <div className={`w-8 h-8 flex items-center justify-center bg-white/5 ${getTypeColor(item._type)}`}>
                       <Icon size={14} />

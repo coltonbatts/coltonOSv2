@@ -94,7 +94,7 @@ export default function VaultView({ uid, initialState }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { items, loading, add, update, remove } = useCollection(uid, `vault_${activeCategory}`);
+  const { items, loading, add, update, remove } = useCollection(uid, activeCategory);
   const { addToast } = useToast();
 
   // Filter items by search

@@ -5,6 +5,7 @@ import Dashboard from './views/Dashboard';
 import ProjectsView from './views/ProjectsView';
 import VaultView from './views/VaultView';
 import ScheduleView from './views/ScheduleView';
+import ProjectDetailView from './views/ProjectDetailView';
 import { ToastProvider } from './context/ToastContext';
 
 // ============================================
@@ -117,6 +118,14 @@ function App() {
         return <VaultView uid={user?.uid} initialState={viewProps} />;
       case 'schedule':
         return <ScheduleView uid={user?.uid} />;
+      case 'project-detail':
+        return (
+          <ProjectDetailView
+            uid={user?.uid}
+            projectId={viewProps.id}
+            onBack={() => setActiveTab('projects')}
+          />
+        );
       default:
         return <Dashboard uid={user?.uid} onNavigate={setActiveTab} />;
     }
