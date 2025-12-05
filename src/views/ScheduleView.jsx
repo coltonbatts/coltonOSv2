@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import ScheduleImporter from '../components/ScheduleImporter';
-import { Calendar, Clock, Plus, Upload, CheckCircle2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Plus, Upload, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCollection } from '../hooks/useFirestore';
 import { useToast } from '../context/ToastContext';
 
@@ -30,7 +31,10 @@ export default function ScheduleView({ uid }) {
   };
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
+  const timeSlots = Array.from({ length: 12 }, (_, i) => {
+    const hour = i + 8;
+    return `${hour > 12 ? hour - 12 : hour} ${hour >= 12 ? 'PM' : 'AM'}`;
+  });
 
   // Helper to check if an event occurs on a specific date/time
   const getEventsForSlot = (date, hour) => {
@@ -120,9 +124,14 @@ export default function ScheduleView({ uid }) {
     }
   };
 
+  const handleMarkdownDrop = (e) => {
+    e.preventDefault();
+    setImporting(true);
+  };
+
   return (
     <div
-      className="h-full p-8 lg:p-12 flex flex-col gap-6 relative"
+      className="flex flex-col h-full w-full overflow-hidden relative p-8 lg:p-10"
       onDragOver={(e) => {
         e.preventDefault();
         if (!importing) setImporting(true);
@@ -135,75 +144,75 @@ export default function ScheduleView({ uid }) {
         />
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-6">
+      {/* Header - Floating Glass */}
+      <div className="flex-none p-6 mb-6 flex items-center justify-between glass-panel rounded-3xl z-20">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-light text-white mb-2 flex items-center gap-3">
-            <Calendar size={32} strokeWidth={1.5} className="text-white/60" />
-            Schedule
-          </h1>
-          <div className="flex items-center gap-2 text-xs text-white/40 font-mono uppercase tracking-widest">
-            <span className="w-2 h-2 bg-yellow-500 rounded-full" />
-            Week View
-            <span className="mx-2 text-white/20">|</span>
-            {/* Week navigation controls */}
-            <button onClick={() => navigateWeek(-1)} className="hover:text-white transition-colors">{'<'}</button>
-            <span>{startOfWeek.toLocaleDateString([], { month: 'short', day: 'numeric' })} - {weekDays[6].toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            <button onClick={() => navigateWeek(1)} className="hover:text-white transition-colors">{'>'}</button>
-          </div>
+          <h1 className="text-3xl font-medium text-white mb-1 tracking-tight text-glow">Schedule</h1>
+          <p className="text-xs text-white/50 font-medium uppercase tracking-widest pl-0.5">
+            {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </p>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => setCurrentDate(new Date())}
-            className="px-4 py-2 bg-white/5 border border-white/10 text-white/60 font-mono text-sm hover:text-white hover:border-white/30 transition-all"
-          >
-            Today
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-black/20 p-1 rounded-xl border border-white/10 backdrop-blur-md">
+            <button
+              onClick={() => navigateWeek(-1)}
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => setCurrentDate(new Date())}
+              className="px-4 text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            >
+              Today
+            </button>
+            <button
+              onClick={() => navigateWeek(1)}
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+
           <button
             onClick={() => setImporting(true)}
-            className="px-4 py-2 bg-white/5 border border-white/10 text-white/60 font-mono text-sm hover:text-white hover:border-white/30 transition-all flex items-center gap-2"
+            className="p-3 glass-item rounded-xl text-white/70 hover:text-white transition-all group"
+            title="Import Schedule"
           >
-            <Upload size={14} />
-            Import Schedule
-          </button>
-          <button className="bg-white text-black px-4 py-2 font-mono text-sm uppercase tracking-wider hover:bg-white/90 transition-colors flex items-center gap-2">
-            <Plus size={16} /> Add Event
+            <CalendarIcon size={18} />
           </button>
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-white/5 border border-white/10 relative">
+      {/* Calendar Grid - Floating Glass Panel */}
+      <div className="flex-1 overflow-hidden flex flex-col relative glass-panel rounded-3xl backdrop-blur-2xl">
         {loading && (
-          <div className="absolute inset-0 bg-slate-950/50 flex items-center justify-center z-10 backdrop-blur-sm">
-            <div className="text-white/30 font-mono animate-pulse">Loading schedule...</div>
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20 backdrop-blur-sm">
+            <div className="text-white/40 font-medium animate-pulse">Loading schedule...</div>
           </div>
         )}
 
         {/* Day Headers */}
-        <div className="grid grid-cols-8 border-b border-white/10">
-          <div className="p-3 text-xs text-white/20 font-mono border-r border-white/5"></div>
+        <div className="flex border-b border-white/10 bg-white/5">
+          <div className="w-16 flex-none border-r border-white/10 bg-white/5" /> {/* Time column header */}
           {weekDays.map((date, i) => {
             const isToday = date.toDateString() === today.toDateString();
             const focus = getDailyFocus(date);
 
             return (
-              <div
-                key={i}
-                className={`p-3 text-center border-r border-white/5 last:border-r-0 ${isToday ? 'bg-white/5' : ''}`}
-              >
-                <div className="text-xs text-white/40 font-mono uppercase mb-1">{dayNames[i]}</div>
-                <div className={`text-xl font-light mb-2 ${isToday ? 'text-white' : 'text-white/60'}`}>
+              <div key={i} className={`flex-1 py-4 text-center border-r border-white/5 last:border-r-0 ${isToday ? 'bg-white/[0.03]' : ''}`}>
+                <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${isToday ? 'text-blue-400' : 'text-white/40'}`}>
+                  {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                </div>
+                <div className={`text-xl font-light mb-2 ${isToday ? 'text-white scale-110 origin-bottom' : 'text-white/70'} transition-transform`}>
                   {date.getDate()}
                 </div>
+
                 {focus && (
-                  <div className={`text-[10px] font-mono uppercase tracking-wider py-1 px-2 border rounded ${focus.color === 'blue' ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' :
-                    focus.color === 'purple' ? 'border-purple-500/30 text-purple-400 bg-purple-500/10' :
-                      focus.color === 'yellow' ? 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10' :
-                        focus.color === 'orange' ? 'border-orange-500/30 text-orange-400 bg-orange-500/10' :
-                          focus.color === 'emerald' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
-                            'border-white/20 text-white/40'
+                  <div className={`mx-auto inline-block px-2 py-0.5 rounded-full text-[9px] font-medium border ${focus.color === 'blue' ? 'border-blue-500/20 text-blue-300 bg-blue-500/10' :
+                      focus.color === 'purple' ? 'border-purple-500/20 text-purple-300 bg-purple-500/10' :
+                        'border-white/10 text-white/60 bg-white/5'
                     }`}>
                     {focus.title}
                   </div>
@@ -213,59 +222,84 @@ export default function ScheduleView({ uid }) {
           })}
         </div>
 
-        {/* Time Grid */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-8 border-b border-white/5 min-h-[80px]">
-              {/* Time Label */}
-              <div className="p-2 text-xs text-white/20 font-mono text-right pr-3 border-r border-white/5">
-                {hour > 12 ? hour - 12 : hour}{hour >= 12 ? 'PM' : 'AM'}
-              </div>
-
-              {/* Days */}
-              {weekDays.map((date, i) => {
-                const dayEvents = getEventsForSlot(date, hour);
-                const isToday = date.toDateString() === today.toDateString();
-
-                return (
-                  <div
-                    key={i}
-                    className={`border-r border-white/5 last:border-r-0 relative group ${isToday ? 'bg-white/[0.02]' : ''}`}
-                  >
-                    {/* Render Events */}
-                    {dayEvents.map(event => {
-                      // Calculate simplistic height based on duration (assuming whole hours for now from seed)
-                      // In a real app, this would be pixel math based on start/end timestamps
-                      const start = parseInt(event.startTime.split(':')[0]);
-                      const end = parseInt(event.endTime.split(':')[0]);
-                      const duration = end - start;
-                      // Determine if we should render the block here (only if it matches start hour)
-                      if (start !== hour) return null;
-
-                      return (
-                        <div
-                          key={event.id}
-                          className={`absolute inset-x-1 top-1 z-10 p-2 rounded-sm border text-xs font-mono overflow-hidden ${getEventStyle(event)}`}
-                          style={{
-                            height: `calc(${duration * 100}% + ${duration * 1}px - 8px)`,
-                            minHeight: '40px'
-                          }}
-                        >
-                          <div className="font-bold truncate">{event.title}</div>
-                          <div className="opacity-60">{event.startTime}-{event.endTime}</div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Hover Add Button */}
-                    <button className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/5 flex items-center justify-center transition-all z-0">
-                      <Plus size={14} className="text-white/40" />
-                    </button>
-                  </div>
-                );
-              })}
+        {/* Scrollable Grid */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-black/20">
+          {/* Current Time Line */}
+          {new Date().toDateString() === weekDays.find(d => d.toDateString() === new Date().toDateString())?.toDateString() && (
+            <div
+              className="absolute left-0 right-0 border-t border-red-500/50 z-20 pointer-events-none flex items-center shadow-[0_0_10px_rgba(239,68,68,0.4)]"
+              style={{ top: '35%' }}
+            >
+              <div className="absolute left-0 -mt-[3px] w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]"></div>
             </div>
-          ))}
+          )}
+
+          <div className="flex min-h-[600px]">
+            {/* Time Labels */}
+            <div className="w-16 flex-none flex flex-col border-r border-white/10 bg-white/5">
+              {timeSlots.map((time) => (
+                <div key={time} className="flex-1 h-20 text-[10px] text-white/30 font-medium pt-2 pr-2 text-right border-b border-white/5 relative">
+                  <span className="-top-3 relative">{time}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Days Columns */}
+            {weekDays.map((day, dayIndex) => (
+              <div key={dayIndex} className="flex-1 flex flex-col border-r border-white/5 last:border-r-0 relative min-w-[120px] group">
+                {/* Grid Lines */}
+                {timeSlots.map((_, i) => (
+                  <div key={i} className="flex-1 h-20 border-b border-white/5" />
+                ))}
+
+                {/* Events Logic - Render Events for this day */}
+                {timeSlots.map((timeSlotText, hourIndex) => {
+                  const hour24 = hourIndex + 8;
+                  const dayEvents = getEventsForSlot(day, hour24);
+
+                  return dayEvents.map(event => {
+                    const start = parseInt(event.startTime.split(':')[0]);
+                    const end = parseInt(event.endTime.split(':')[0]);
+                    const duration = end - start;
+
+                    // Calculate exact position based on start time relative to grid
+                    const topPos = (start - 8) * 80; // 80px per hour
+                    const height = duration * 80;
+
+                    return (
+                      <div
+                        key={event.id}
+                        className={`absolute left-1 right-1 z-10 p-2 rounded-xl glass-item border-l-2 text-xs overflow-hidden shadow-sm hover:scale-[1.02] hover:z-20 transition-all ${event.color === 'blue' ? 'border-blue-400' :
+                            event.color === 'purple' ? 'border-purple-400' : 'border-white/50'
+                          }`}
+                        style={{
+                          top: `${topPos}px`,
+                          height: `${height - 4}px`, // -4 for margin
+                        }}
+                      >
+                        <div className="font-semibold text-white truncate tracking-tight mb-0.5">{event.title}</div>
+                        <div className="opacity-60 text-[10px] font-medium">{event.startTime} - {event.endTime}</div>
+                      </div>
+                    );
+                  });
+                })}
+
+                {/* Simplified Events for demo if empty */}
+                {/* Example Event purely for visual if no data */}
+                {dayIndex === 1 && events.length === 0 && (
+                  <div className="absolute top-20 left-1 right-1 h-32 rounded-xl glass-item p-3 border-l-2 border-blue-400 hover:scale-[1.02] transition-transform cursor-pointer group z-10">
+                    <div className="text-xs font-semibold text-white mb-0.5 group-hover:text-blue-300 transition-colors">Deep Work</div>
+                    <div className="text-[10px] text-white/50">10:00 AM - 12:00 PM</div>
+                  </div>
+                )}
+
+                {/* Hover Add Button */}
+                <button className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/[0.02] flex items-center justify-center transition-all z-0 cursor-copy pointer-events-none">
+                  <Plus size={14} className="text-white/20" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

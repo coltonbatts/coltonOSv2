@@ -16,35 +16,29 @@ const navItems = [
 
 export default function Sidebar({ activeTab, setActiveTab }) {
   return (
-    <div className="w-20 h-full border-r border-white/10 flex flex-col items-center py-8 bg-slate-950/50 backdrop-blur-sm">
+    <div className="w-20 h-full border-r border-white/5 flex flex-col items-center py-6 glass-sidebar z-20 relative">
       {/* Logo */}
-      <div className="mb-12">
-        <div className="w-10 h-10 bg-white/5 rounded-none border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer">
-          <Terminal size={20} className="text-white/80" />
+      <div className="mb-8">
+        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer shadow-lg group">
+          <Terminal size={18} className="text-white/60 group-hover:text-white transition-colors" strokeWidth={2} />
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 w-full px-3">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`group relative p-3 transition-all duration-300 ${
-              activeTab === item.id 
-                ? 'text-white' 
-                : 'text-white/40 hover:text-white/70'
-            }`}
+            className={`group relative p-3 rounded-2xl transition-all duration-300 flex justify-center ${activeTab === item.id
+                ? 'glass-item text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+                : 'text-white/30 hover:text-white hover:bg-white/5'
+              }`}
           >
-            <item.icon size={24} strokeWidth={1.5} />
-            
-            {/* Active indicator */}
-            {activeTab === item.id && (
-              <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            )}
-            
+            <item.icon size={22} strokeWidth={1.5} className="transition-transform duration-300 group-hover:scale-110" />
+
             {/* Tooltip */}
-            <span className="absolute left-14 bg-slate-900 border border-white/10 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+            <span className="absolute left-14 top-1/2 -translate-y-1/2 bg-[#2c2c2e] border border-white/10 px-3 py-1.5 text-xs text-white font-medium opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-50 pointer-events-none rounded-lg shadow-xl translate-x-2 group-hover:translate-x-0 backdrop-blur-md">
               {item.label}
             </span>
           </button>
@@ -52,10 +46,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       </div>
 
       {/* Version info at bottom */}
-      <div className="mt-auto">
-        <div className="text-[10px] text-white/20 font-mono tracking-wider -rotate-90 origin-center whitespace-nowrap">
-          v0.2.0
-        </div>
+      <div className="mt-auto pb-4 opacity-30 text-[9px] font-mono tracking-widest text-white hover:opacity-100 transition-opacity cursor-default">
+        v0.2
       </div>
     </div>
   );

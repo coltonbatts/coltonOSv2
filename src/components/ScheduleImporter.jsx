@@ -111,32 +111,35 @@ export default function ScheduleImporter({ onImport, onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300">
             <div
                 className={`
-                bg-slate-900 border-2 border-dashed w-full max-w-lg aspect-video flex flex-col items-center justify-center transition-all
-                ${isDragging ? 'border-blue-500 bg-blue-500/5' : 'border-white/20 hover:border-white/40'}
+                w-full max-w-lg aspect-video flex flex-col items-center justify-center transition-all duration-300 rounded-3xl
+                ${isDragging
+                        ? 'bg-blue-500/20 border-2 border-blue-500/50 scale-105 shadow-[0_0_50px_rgba(59,130,246,0.3)]'
+                        : 'bg-[#1e1e1e] border border-white/10 shadow-2xl'
+                    }
             `}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
-                <div className="mb-4 p-4 bg-white/5 rounded-full">
-                    <Upload size={32} className="text-white/40" />
+                <div className={`mb-6 p-6 rounded-full transition-all duration-300 ${isDragging ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/40'}`}>
+                    <Upload size={48} strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-light text-white mb-2">Drop Schedule File</h3>
-                <p className="text-sm text-white/40 font-mono max-w-xs text-center mb-6">
-                    Drag & drop your markdown schedule file here to automatically build your week.
+                <h3 className="text-xl font-medium text-white mb-2">Drop Schedule File</h3>
+                <p className="text-sm text-white/50 max-w-xs text-center mb-8 leading-relaxed">
+                    Drag your markdown schedule file here to automatically build your week.
                 </p>
 
                 {error && (
-                    <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded mb-4">
+                    <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-lg mb-6 border border-red-500/20">
                         <AlertCircle size={14} />
                         {error}
                     </div>
                 )}
 
-                <button onClick={onClose} className="text-xs text-white/30 hover:text-white underline font-mono">
+                <button onClick={onClose} className="text-sm text-white/40 hover:text-white transition-colors">
                     Cancel
                 </button>
             </div>

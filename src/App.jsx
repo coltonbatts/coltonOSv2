@@ -133,24 +133,22 @@ function App() {
 
   return (
     <ToastProvider>
-      <div className="flex h-screen w-screen bg-slate-950 overflow-hidden selection:bg-white/20 selection:text-white">
-        {/* Background Grid Effect */}
-        <div
-          className="fixed inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }}
-        />
-
-        {/* Subtle gradient overlay */}
-        <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
+      <div className="flex h-screen w-screen bg-black overflow-hidden selection:bg-blue-500/30 selection:text-white font-[system-ui] relative">
+        {/* === AMBIENT ENVIRONMENT BACKGROUND === */}
+        <div className="fixed inset-0 pointer-events-none bg-[#050505]">
+          {/* Top Right - Blue/Purple */}
+          <div className="ambient-blob w-[800px] h-[800px] bg-blue-600/20 top-[-200px] right-[-200px] rounded-full blur-[120px]" />
+          {/* Bottom Left - Purple/Pink */}
+          <div className="ambient-blob w-[600px] h-[600px] bg-purple-600/10 bottom-[-100px] left-[-100px] rounded-full blur-[100px] animation-delay-2000" />
+          {/* Top Left - Subtle Cyan */}
+          <div className="ambient-blob w-[400px] h-[400px] bg-cyan-900/10 top-[-100px] left-[200px] rounded-full blur-[80px]" />
+        </div>
 
         {/* Sidebar */}
         <Sidebar activeTab={typeof activeTab === 'string' ? activeTab : activeTab.view} setActiveTab={setActiveTab} />
 
-        {/* Main Content */}
-        <main className="flex-1 relative z-10 overflow-hidden">
+        {/* Main Content - No solid background, letting glass shine through */}
+        <main className="flex-1 relative z-10 h-full overflow-hidden flex flex-col my-4 mr-4 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm bg-black/10">
           {renderView()}
         </main>
       </div>

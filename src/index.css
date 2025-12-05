@@ -3,20 +3,90 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Apple Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
+
+  /* Semantic Colors (Apple Dark Mode / VisionOS) */
+  --bg-base: #000000;
+  --glass-heavy: rgba(20, 20, 20, 0.6);
+  --glass-light: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.25);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #020617;
+  background-color: var(--bg-base);
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* VISIONOS GLASS SYSTEM */
+
+/* The main "Base" for cards - Heavy Blur */
+.glass-panel {
+  background: rgba(30, 30, 35, 0.4);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 4px 24px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  /* Inner glow ring */
+}
+
+/* Lighter, more translucent items "floating" above base */
+.glass-item {
+  background: var(--glass-light);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* The Sidebar - "Frosted" Pane */
+.glass-sidebar {
+  background: rgba(10, 10, 10, 0.3);
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.5);
+  /* Deep shadow to separate */
+}
+
+/* Ambient Background Blobs (Helpers) */
+.ambient-blob {
+  position: fixed;
+  filter: blur(100px);
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
+  animation: blob-pulse 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes blob-pulse {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(1.2) translate(50px, -50px);
+    opacity: 0.5;
+  }
 }
 
 /* Custom Scrollbar */
@@ -31,39 +101,20 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 0;
+  border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* Firefox */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+/* Utilities */
+.text-glow {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
-/* Line clamp utilities */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.clip-path-inset {
+  /* No special clipping needed if we handle z-index correctly with glass layers */
 }
 
 /* Focus styles */
@@ -72,38 +123,19 @@ body {
 }
 
 *:focus-visible {
-  outline: 1px solid rgba(255, 255, 255, 0.3);
-  outline-offset: 2px;
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
 }
 
-/* Selection */
-::selection {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-/* Smooth transitions globally */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, transform;
+/* Global Transitions */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, transform, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-duration: 200ms;
 }
 
-/* Disable transitions for elements that shouldn't animate */
 .no-transition {
   transition: none !important;
-}
-
-/* Animation for pulse effect */
-@keyframes subtle-pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-subtle-pulse {
-  animation: subtle-pulse 2s ease-in-out infinite;
 }
