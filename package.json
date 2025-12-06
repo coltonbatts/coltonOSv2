@@ -1,5 +1,15 @@
 {
   "name": "colton-os",
+  "description": "A personal operating system and dashboard built with React, Vite, and Tailwind CSS. Features include a Kanban-style project manager, a digital vault for asset management, and anonymous authentication with Firebase integration.",
+  "keywords": [
+    "personal-os",
+    "dashboard",
+    "firebase",
+    "tailwind",
+    "vite",
+    "react"
+  ],
+  "homepage": "https://coltonos.web.app",
   "private": true,
   "version": "0.0.0",
   "type": "module",

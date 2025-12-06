@@ -14,7 +14,9 @@ import {
   Copy,
   Edit2,
   Filter,
-  ChevronDown
+  ChevronDown,
+  Download,
+  Upload
 } from 'lucide-react';
 import { useCollection } from '../hooks/useFirestore';
 import { useToast } from '../context/ToastContext';
@@ -141,6 +143,49 @@ export default function VaultView({ uid, initialState }) {
     }
   };
 
+  const handleExportPrompts = () => {
+    const prompts = items.filter(item => activeCategory === 'prompts'); // Ensure only if prompts active, but button should control
+    const dataStr = JSON.stringify(prompts, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = 'prompts_backup.json';
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    addToast('Prompts exported', 'success');
+  };
+
+  const handleImportPrompts = (e) => {
+    const fileReader = new FileReader();
+    const file = e.target.files[0];
+    if (!file) return;
+
+    fileReader.readAsText(file, "UTF-8");
+    fileReader.onload = async (e) => {
+      try {
+        const importedItems = JSON.parse(e.target.result);
+        if (Array.isArray(importedItems)) {
+          let count = 0;
+          for (const item of importedItems) {
+            // Removing ID to create new entries
+            const { id, ...data } = item;
+            // Ensure type is correct if missing
+            if (activeCategory === 'prompts' && !data.type) data.type = 'System Prompt';
+
+            await add(data); // Using hook add which handles user ID
+            count++;
+          }
+          addToast(`Imported ${count} prompts`, 'success');
+        }
+      } catch (err) {
+        console.error(err);
+        addToast('Invalid JSON file', 'error');
+      }
+    };
+  };
+
   const category = CATEGORIES[activeCategory];
 
   return (
@@ -162,6 +207,21 @@ export default function VaultView({ uid, initialState }) {
         </div>
 
         <div className="flex items-center gap-4">
+          {activeCategory === 'prompts' && (
+            <div className="flex items-center gap-2 mr-2">
+              <button
+                onClick={handleExportPrompts}
+                className="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                title="Export Prompts"
+              >
+                <Download size={16} />
+              </button>
+              <label className="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer" title="Import Prompts">
+                <Upload size={16} />
+                <input type="file" onChange={handleImportPrompts} accept=".json" className="hidden" />
+              </label>
+            </div>
+          )}
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-white text-black px-5 py-2.5 font-semibold text-xs rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transform hover:scale-105 duration-200"

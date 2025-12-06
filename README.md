@@ -1,5 +1,7 @@
 # Colton OS
 
+![Build Status](https://github.com/coltonbatts/coltonOSv2/actions/workflows/ci.yml/badge.svg)
+
 A personal operating system and dashboard built with React, Vite, and Tailwind CSS.
 
 ## Overview
@@ -29,6 +31,26 @@ Colton OS is a web-based personal dashboard featuring an "Industrial Brutalism m
 - **Frontend:** React, Vite
 - **Styling:** Tailwind CSS, Lucide React (Icons)
 - **Backend/Database:** Firebase (Firestore, Auth)
+
+## Architecture
+
+Colton OS is built as a single-page application (SPA) using React. It leverages a module-based architecture where views are lazy-loaded (conceptually) and state is managed locally within views or via Firebase listeners.
+
+### Data Model
+
+The application uses a flat data structure in Firestore:
+
+- **Users (`/users/{uid}`)**: Stores user preferences and profile data.
+- **Projects (`/users/{uid}/projects/{projectId}`)**: Kanban cards with status (`todo`, `doing`, `done`).
+- **Assets (`/users/{uid}/assets/{assetId}`)**: Items in the Vault, categorized by `type` (project, asset, prompt, link).
+
+### Authentication
+
+Currently supports **Anonymous Authentication** for instant onboarding. Users can upgrade to permanent accounts (Email/Google) to persist data across devices.
+
+### Error Handling
+
+The application includes a global error boundary and specific connection status indicators. if `firebase.js` is missing credentials, a full-screen "System Error" overlay guides the user to fix their `.env.local` configuration.
 
 ## Getting Started
 

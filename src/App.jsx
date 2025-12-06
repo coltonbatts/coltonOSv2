@@ -5,6 +5,7 @@ import Dashboard from './views/Dashboard';
 import ProjectsView from './views/ProjectsView';
 import VaultView from './views/VaultView';
 import ScheduleView from './views/ScheduleView';
+import SettingsView from './views/SettingsView';
 import ProjectDetailView from './views/ProjectDetailView';
 import { ToastProvider } from './context/ToastContext';
 
@@ -118,6 +119,8 @@ function App() {
         return <VaultView uid={user?.uid} initialState={viewProps} />;
       case 'schedule':
         return <ScheduleView uid={user?.uid} />;
+      case 'settings':
+        return <SettingsView uid={user?.uid} user={user} />;
       case 'project-detail':
         return (
           <ProjectDetailView

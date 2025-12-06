@@ -11,9 +11,18 @@ import {
   orderBy,
   deleteDoc,
   where,
-  getDocs
+  getDocs,
+  enableIndexedDbPersistence
 } from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged,
+  linkWithCredential,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  linkWithPopup
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -34,6 +43,15 @@ try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   auth = getAuth(app);
+
+  // Enable Offline Persistence
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+      console.warn("Firestore persistence failed: Multiple tabs open.");
+    } else if (err.code == 'unimplemented') {
+      console.warn("Firestore persistence not supported in this browser.");
+    }
+  });
 } catch (error) {
   console.error("Firebase initialization failed:", error);
   firebaseError = error;
@@ -55,5 +73,9 @@ export {
   where,
   getDocs,
   signInAnonymously,
-  onAuthStateChanged
+  onAuthStateChanged,
+  linkWithCredential,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  linkWithPopup
 };

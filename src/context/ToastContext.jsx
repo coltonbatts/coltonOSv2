@@ -15,14 +15,21 @@ export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
 
     const addToast = useCallback((message, type = 'info', duration = 3000) => {
-        const id = Date.now().toString();
-        setToasts(prev => [...prev, { id, message, type }]);
+        setToasts(prev => {
+            // Deduping: Don't add if same message exists
+            if (prev.some(t => t.message === message)) return prev;
 
-        if (duration) {
-            setTimeout(() => {
-                removeToast(id);
-            }, duration);
-        }
+            const id = Date.now().toString();
+
+            // Auto-remove setup
+            if (duration) {
+                setTimeout(() => {
+                    removeToast(id);
+                }, duration);
+            }
+
+            return [...prev, { id, message, type }];
+        });
     }, []);
 
     const removeToast = useCallback((id) => {

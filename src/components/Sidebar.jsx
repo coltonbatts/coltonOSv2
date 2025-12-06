@@ -4,7 +4,8 @@ import {
   FolderKanban,
   Database,
   Calendar,
-  Terminal
+  Terminal,
+  Settings
 } from 'lucide-react';
 
 const navItems = [
@@ -31,8 +32,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             className={`group relative p-3 rounded-2xl transition-all duration-300 flex justify-center ${activeTab === item.id
-                ? 'glass-item text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
-                : 'text-white/30 hover:text-white hover:bg-white/5'
+              ? 'glass-item text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+              : 'text-white/30 hover:text-white hover:bg-white/5'
               }`}
           >
             <item.icon size={22} strokeWidth={1.5} className="transition-transform duration-300 group-hover:scale-110" />
@@ -45,9 +46,25 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         ))}
       </div>
 
-      {/* Version info at bottom */}
-      <div className="mt-auto pb-4 opacity-30 text-[9px] font-mono tracking-widest text-white hover:opacity-100 transition-opacity cursor-default">
-        v0.2
+      {/* Settings / Bottom Actions */}
+      <div className="mt-auto pb-4 flex flex-col items-center gap-4">
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`group relative p-3 rounded-2xl transition-all duration-300 flex justify-center ${activeTab === 'settings'
+            ? 'glass-item text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+            : 'text-white/30 hover:text-white hover:bg-white/5'
+            }`}
+        >
+          <Settings size={22} strokeWidth={1.5} className="transition-transform duration-300 group-hover:rotate-90" />
+          {/* Tooltip */}
+          <span className="absolute left-14 top-1/2 -translate-y-1/2 bg-[#2c2c2e] border border-white/10 px-3 py-1.5 text-xs text-white font-medium opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-50 pointer-events-none rounded-lg shadow-xl translate-x-2 group-hover:translate-x-0 backdrop-blur-md">
+            Settings
+          </span>
+        </button>
+
+        <div className="opacity-30 text-[9px] font-mono tracking-widest text-white hover:opacity-100 transition-opacity cursor-default">
+          v0.2
+        </div>
       </div>
     </div>
   );

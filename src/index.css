@@ -32,9 +32,9 @@ body {
 
 /* The main "Base" for cards - Heavy Blur */
 .glass-panel {
-  background: rgba(30, 30, 35, 0.4);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(30, 30, 35, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   box-shadow:
     0 4px 24px -1px rgba(0, 0, 0, 0.2),
@@ -49,6 +49,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform;
 }
 
 .glass-item:hover {
@@ -59,9 +60,9 @@ body {
 
 /* The Sidebar - "Frosted" Pane */
 .glass-sidebar {
-  background: rgba(10, 10, 10, 0.3);
-  backdrop-filter: blur(50px) saturate(200%);
-  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 20px 0 60px rgba(0, 0, 0, 0.5);
   /* Deep shadow to separate */
@@ -73,7 +74,9 @@ body {
   filter: blur(100px);
   opacity: 0.4;
   z-index: 0;
+  z-index: 0;
   pointer-events: none;
+  will-change: transform;
   animation: blob-pulse 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
